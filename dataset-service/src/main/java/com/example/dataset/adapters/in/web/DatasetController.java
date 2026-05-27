@@ -2,6 +2,7 @@ package com.example.dataset.adapters.in.web;
 
 import com.example.dataset.core.domain.DataRow;
 import com.example.dataset.core.domain.Dataset;
+import com.example.dataset.core.domain.DatasetNotFoundException;
 import com.example.dataset.core.port.in.CreateDatasetUseCase;
 import com.example.dataset.core.port.out.DatasetRepository;
 import org.springframework.http.MediaType;
@@ -18,10 +19,14 @@ import java.util.Map;
 public class DatasetController {
     private final CreateDatasetUseCase createDatasetUseCase;
     private final DatasetRepository datasetRepository;
+    private final DatasetUploadRequestValidator uploadRequestValidator;
 
-    public DatasetController(CreateDatasetUseCase createDatasetUseCase, DatasetRepository datasetRepository) {
+    public DatasetController(CreateDatasetUseCase createDatasetUseCase,
+                             DatasetRepository datasetRepository,
+                             DatasetUploadRequestValidator uploadRequestValidator) {
         this.createDatasetUseCase = createDatasetUseCase;
         this.datasetRepository = datasetRepository;
+        this.uploadRequestValidator = uploadRequestValidator;
     }
 
     @GetMapping("/datasets/ping")
@@ -36,6 +41,7 @@ public class DatasetController {
 
     @PostMapping(value = "/datasets/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DatasetSummaryResponse uploadCsv(@RequestParam String name, @RequestParam("file") MultipartFile file) throws IOException {
+        uploadRequestValidator.validate(name, file);
         String csvContent = new String(file.getBytes(), StandardCharsets.UTF_8);
         Dataset dataset = createDatasetUseCase.createDatasetFromCsv(name, csvContent);
         return toSummary(dataset);
@@ -128,10 +134,4 @@ public class DatasetController {
             List<Map<String, String>> rows
     ) {}
 
-    @ResponseStatus(code = org.springframework.http.HttpStatus.NOT_FOUND)
-    public static class DatasetNotFoundException extends RuntimeException {
-        public DatasetNotFoundException(Long datasetId) {
-            super("Dataset not found: " + datasetId);
-        }
-    }
 }

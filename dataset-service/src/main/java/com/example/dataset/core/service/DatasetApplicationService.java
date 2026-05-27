@@ -1,6 +1,7 @@
 package com.example.dataset.core.service;
 
 import com.example.dataset.core.domain.Dataset;
+import com.example.dataset.core.domain.DatasetValidationException;
 import com.example.dataset.core.port.in.CreateDatasetUseCase;
 import com.example.dataset.core.port.out.DatasetRepository;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,20 @@ public class DatasetApplicationService implements CreateDatasetUseCase {
 
     @Override
     public Dataset createEmptyDataset(String name) {
-        return repository.save(new Dataset(null, name, null, List.of(), List.of(), 0));
+        validateDatasetName(name);
+        return repository.save(new Dataset(null, name.trim(), null, List.of(), List.of(), 0));
     }
 
     @Override
     public Dataset createDatasetFromCsv(String name, String csvContent) {
-        Dataset dataset = csvImporter.importCsv(name, csvContent);
+        validateDatasetName(name);
+        Dataset dataset = csvImporter.importCsv(name.trim(), csvContent);
         return repository.save(dataset);
+    }
+
+    private void validateDatasetName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new DatasetValidationException("Dataset name is required.");
+        }
     }
 }

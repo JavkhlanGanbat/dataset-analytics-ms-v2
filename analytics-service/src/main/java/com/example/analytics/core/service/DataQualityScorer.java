@@ -34,18 +34,42 @@ public class DataQualityScorer {
         long numericValues = columns.stream()
                 .mapToLong(ColumnStatistics::numericValueCount)
                 .sum();
+        long columnsWithMissingValues = columns.stream()
+                .filter(column -> column.missingValues() > 0)
+                .count();
+        long columnsWithSevereMissingValues = columns.stream()
+                .filter(column -> column.missingPercentage() >= 20.0)
+                .count();
+        long columnsWithOutliers = columns.stream()
+                .filter(column -> column.outlierCount() > 0)
+                .count();
+        long lowDiversityColumns = columns.stream()
+                .filter(this::hasLowDiversity)
+                .count();
+        double maxMissingPercentage = columns.stream()
+                .mapToDouble(ColumnStatistics::missingPercentage)
+                .max()
+                .orElse(0.0);
 
         double missingRatio = missingValues / (double) totalCells;
         double outlierDensity = numericValues == 0 ? 0.0 : outliers / (double) numericValues;
+        long warningCount = columnsWithMissingValues
+                + columnsWithSevereMissingValues
+                + columnsWithOutliers
+                + mixedColumns
+                + emptyColumns
+                + lowDiversityColumns;
 
-        int penalty = (int) Math.round(missingRatio * 45);
-        penalty += Math.min(25, mixedColumns * 8);
-        penalty += Math.min(20, (int) Math.round(outlierDensity * 100));
-        penalty += Math.min(25, emptyColumns * 15);
+        int penalty = (int) Math.round(missingRatio * 60);
+        penalty += Math.min(30, mixedColumns * 12);
+        penalty += Math.min(35, emptyColumns * 22);
+        penalty += Math.min(25, (int) Math.round(outlierDensity * 60));
+        penalty += Math.min(30, warningCount * 3);
+        penalty += Math.min(20, (int) Math.round(maxMissingPercentage / 4.0));
 
         int score = Math.max(0, 100 - penalty);
         String grade = grade(score);
-        String explanation = explanation(score, missingRatio, mixedColumns, outlierDensity, emptyColumns);
+        String explanation = explanation(score, missingRatio, mixedColumns, outlierDensity, emptyColumns, warningCount);
         return new DataQualityScore(score, grade, explanation);
     }
 
@@ -53,19 +77,24 @@ public class DataQualityScorer {
         if (score >= 90) {
             return "A";
         }
-        if (score >= 80) {
+        if (score >= 75) {
             return "B";
         }
-        if (score >= 70) {
+        if (score >= 60) {
             return "C";
         }
-        if (score >= 60) {
+        if (score >= 40) {
             return "D";
         }
         return "F";
     }
 
-    private String explanation(double score, double missingRatio, long mixedColumns, double outlierDensity, long emptyColumns) {
+    private String explanation(double score,
+                               double missingRatio,
+                               long mixedColumns,
+                               double outlierDensity,
+                               long emptyColumns,
+                               long warningCount) {
         List<String> issues = new ArrayList<>();
         if (missingRatio >= 0.05) {
             issues.add("missing values");
@@ -78,6 +107,9 @@ public class DataQualityScorer {
         }
         if (emptyColumns > 0) {
             issues.add("empty columns");
+        }
+        if (warningCount >= 4) {
+            issues.add("repeated quality warnings");
         }
 
         if (issues.isEmpty()) {
@@ -92,6 +124,15 @@ public class DataQualityScorer {
             return "Dataset needs review because it contains " + issueText + ".";
         }
         return "Dataset has significant quality issues including " + issueText + ".";
+    }
+
+    private boolean hasLowDiversity(ColumnStatistics column) {
+        long presentValues = column.totalValues() - column.missingValues();
+        return column.inferredType() != ColumnType.NUMERIC
+                && column.inferredType() != ColumnType.EMPTY
+                && presentValues >= 4
+                && column.distinctCount() > 0
+                && column.distinctCount() <= 2;
     }
 
     private String joinIssues(List<String> issues) {

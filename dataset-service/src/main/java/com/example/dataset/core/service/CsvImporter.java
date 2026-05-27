@@ -3,6 +3,7 @@ package com.example.dataset.core.service;
 import com.example.dataset.core.domain.Column;
 import com.example.dataset.core.domain.DataRow;
 import com.example.dataset.core.domain.Dataset;
+import com.example.dataset.core.domain.DatasetValidationException;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,7 +14,7 @@ public class CsvImporter {
     public Dataset importCsv(String name, String csvContent) {
         List<List<String>> records = parse(csvContent);
         if (records.isEmpty()) {
-            throw new IllegalArgumentException("CSV file is empty");
+            throw new DatasetValidationException("CSV file is empty.");
         }
 
         List<String> headers = records.get(0).stream()
@@ -21,7 +22,11 @@ public class CsvImporter {
                 .toList();
 
         if (headers.isEmpty() || headers.stream().anyMatch(String::isBlank)) {
-            throw new IllegalArgumentException("CSV header row must contain non-empty column names");
+            throw new DatasetValidationException("CSV header row must contain non-empty column names.");
+        }
+
+        if (records.size() == 1) {
+            throw new DatasetValidationException("CSV file must contain at least one data row.");
         }
 
         List<Column> columns = headers.stream()
@@ -31,6 +36,11 @@ public class CsvImporter {
         List<DataRow> rows = new ArrayList<>();
         for (int i = 1; i < records.size(); i++) {
             List<String> record = records.get(i);
+            if (record.size() != headers.size()) {
+                throw new DatasetValidationException("CSV row " + (i + 1) + " has "
+                        + record.size() + " values but the header has "
+                        + headers.size() + " columns.");
+            }
             Map<String, String> values = new LinkedHashMap<>();
             for (int col = 0; col < headers.size(); col++) {
                 String value = col < record.size() ? record.get(col) : "";
