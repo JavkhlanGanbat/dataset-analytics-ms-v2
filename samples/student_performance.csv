@@ -1,0 +1,13 @@
+student_id,name,program,attendance_rate,assignment_avg,exam_score,study_hours_per_week,part_time_job,final_grade
+S001,Bat-Erdene,Software Engineering,96,88,91,14,No,A
+S002,Nomin,Information Systems,82,74,78,9,Yes,B
+S003,Anu,Software Engineering,91,92,95,18,No,A
+S004,Temuulen,Data Science,67,61,58,4,Yes,D
+S005,Saruul,Information Systems,74,,69,6,Yes,C
+S006,Khulan,Software Engineering,88,81,84,11,No,B
+S007,Enkhjin,Data Science,45,52,49,2,Yes,F
+S008,Tengis,Software Engineering,99,96,98,22,No,A
+S009,Maral,Information Systems,79,73,75,,No,B
+S010,Odgerel,Data Science,83,85,410,10,No,A
+S011,Altangerel,Software Engineering,,77,80,8,Yes,B
+S012,Uyanga,Information Systems,90,88,87,13,No,A

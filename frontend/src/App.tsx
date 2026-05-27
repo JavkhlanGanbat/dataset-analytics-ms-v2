@@ -8,7 +8,6 @@ import {
   fetchDatasets,
   uploadDataset
 } from './services/api';
-import { API_GATEWAY_URL } from './services/config';
 
 type Notice = {
   type: 'success' | 'error';
@@ -68,7 +67,10 @@ function App() {
         fileInputRef.current.value = '';
       }
       setProfile(null);
-      setUploadNotice({ type: 'success', message: `Uploaded dataset ${uploaded.id}: ${uploaded.name}` });
+      setUploadNotice({
+        type: 'success',
+        message: `Dataset uploaded successfully. "${uploaded.name}" is ready for analysis.`
+      });
       await loadDatasets(uploaded.id);
     } catch (error) {
       setUploadNotice({ type: 'error', message: error instanceof Error ? error.message : 'Upload failed.' });
@@ -104,10 +106,11 @@ function App() {
     <main className="app-shell">
       <header className="app-header">
         <div>
-          <p className="eyebrow">Microservices Demo</p>
-          <h1>Dataset Analytics</h1>
+          <h1>DataProfiler</h1>
+          <p className="subtitle">
+            Upload a CSV file and instantly detect missing values, outliers, and quality issues.
+          </p>
         </div>
-        <div className="gateway-pill">Gateway: {API_GATEWAY_URL}</div>
       </header>
 
       <div className="workspace-grid">
@@ -168,8 +171,13 @@ function App() {
                     <td>{dataset.columnCount}</td>
                     <td>{formatDate(dataset.createdAt)}</td>
                     <td>
-                      <button className="text-button" type="button" onClick={() => selectDataset(dataset.id)}>
-                        Select
+                      <button
+                        className={`text-button ${selectedDatasetId === dataset.id ? 'selected-button' : ''}`}
+                        type="button"
+                        onClick={() => selectDataset(dataset.id)}
+                        disabled={selectedDatasetId === dataset.id}
+                      >
+                        {selectedDatasetId === dataset.id ? 'Selected' : 'Select'}
                       </button>
                     </td>
                   </tr>
@@ -186,7 +194,7 @@ function App() {
 
         <section className="panel analytics-panel">
           <div className="section-heading with-action">
-            <h2>Analytics</h2>
+            <h2>Dataset Profile</h2>
             <button
               className="primary-button compact"
               type="button"
@@ -194,7 +202,7 @@ function App() {
               disabled={isLoadingProfile || selectedDatasetId == null}
             >
               <BarChart3 size={18} aria-hidden="true" />
-              {isLoadingProfile ? 'Loading' : 'Profile'}
+              {isLoadingProfile ? 'Analyzing' : 'Generate Profile'}
             </button>
           </div>
           <label className="select-label">
@@ -212,7 +220,7 @@ function App() {
             </select>
           </label>
           {profileError && <StatusMessage type="error" message={profileError} />}
-          {profile ? <ProfileView profile={profile} /> : <div className="empty-profile">No profile loaded.</div>}
+          {profile ? <ProfileView profile={profile} /> : <div className="empty-profile">Choose a dataset and generate a profile.</div>}
         </section>
       </div>
     </main>
@@ -251,25 +259,29 @@ function ProfileView({ profile }: { profile: DatasetProfile }) {
         </div>
       </div>
 
-      <div className="quality-band">
+      <div className={`quality-band ${gradeClass(profile.dataQuality.grade)}`}>
         <div className="quality-score">
-          <span>{profile.dataQuality.grade}</span>
-          <strong>{profile.dataQuality.score}</strong>
+          <span>Data Quality Score</span>
+          <strong>{profile.dataQuality.score}<small>/100</small></strong>
+          <em>Grade {profile.dataQuality.grade}</em>
         </div>
         <p>{profile.dataQuality.explanation}</p>
       </div>
 
       <div>
-        <h3>Insights</h3>
-        <ul className="insight-list">
+        <h3>Key Findings</h3>
+        <div className="insight-grid">
           {profile.insights.map((insight) => (
-            <li key={insight}>{insight}</li>
+            <article className="insight-card" key={insight}>
+              <span>{insightCategory(insight)}</span>
+              <p>{insight}</p>
+            </article>
           ))}
-        </ul>
+        </div>
       </div>
 
       <div>
-        <h3>Column Statistics</h3>
+        <h3>Column Details</h3>
         <div className="table-wrap">
           <table>
             <thead>
@@ -279,8 +291,8 @@ function ProfileView({ profile }: { profile: DatasetProfile }) {
                 <th>Values</th>
                 <th>Missing</th>
                 <th>Distinct</th>
-                <th>Numeric stats</th>
-                <th>Text stats</th>
+                <th>Warnings</th>
+                <th>Summary</th>
               </tr>
             </thead>
             <tbody>
@@ -291,8 +303,8 @@ function ProfileView({ profile }: { profile: DatasetProfile }) {
                   <td>{column.totalValues}</td>
                   <td>{column.missingValues} ({formatPercent(column.missingPercentage)})</td>
                   <td>{column.distinctCount}</td>
-                  <td>{numericSummary(column)}</td>
-                  <td>{textSummary(column)}</td>
+                  <td><WarningLabels column={column} /></td>
+                  <td>{columnSummary(column)}</td>
                 </tr>
               ))}
             </tbody>
@@ -303,18 +315,68 @@ function ProfileView({ profile }: { profile: DatasetProfile }) {
   );
 }
 
+function WarningLabels({ column }: { column: ColumnProfile }) {
+  const warnings = columnWarnings(column);
+  if (warnings.length === 0) {
+    return <span className="muted-text">None</span>;
+  }
+
+  return (
+    <div className="warning-list">
+      {warnings.map((warning) => (
+        <span className="warning-chip" key={warning}>{warning}</span>
+      ))}
+    </div>
+  );
+}
+
+function columnWarnings(column: ColumnProfile) {
+  const warnings: string[] = [];
+  if (column.missingValues > 0) {
+    warnings.push(`${formatPercent(column.missingPercentage)} missing`);
+  }
+  if (column.outlierCount > 0) {
+    warnings.push(`${column.outlierCount} outlier${column.outlierCount === 1 ? '' : 's'}`);
+  }
+  if (column.inferredType === 'MIXED') {
+    warnings.push('Mixed values');
+  }
+  if (column.inferredType === 'EMPTY') {
+    warnings.push('Empty');
+  }
+  if (hasLowDiversity(column)) {
+    warnings.push('Low diversity');
+  }
+  return warnings;
+}
+
+function hasLowDiversity(column: ColumnProfile) {
+  const presentValues = column.totalValues - column.missingValues;
+  return column.inferredType !== 'NUMERIC'
+    && column.inferredType !== 'EMPTY'
+    && presentValues >= 4
+    && column.distinctCount > 0
+    && column.distinctCount <= 2;
+}
+
+function columnSummary(column: ColumnProfile) {
+  if (column.inferredType === 'NUMERIC' || column.numericValueCount > 0) {
+    return numericSummary(column);
+  }
+  return textSummary(column);
+}
+
 function numericSummary(column: ColumnProfile) {
   if (column.inferredType !== 'NUMERIC' && column.numericValueCount === 0) {
     return '-';
   }
 
   return [
-    `min ${formatValue(column.min)}`,
-    `max ${formatValue(column.max)}`,
-    `mean ${formatValue(column.mean)}`,
-    `median ${formatValue(column.median)}`,
-    `std ${formatValue(column.standardDeviation)}`,
-    `outliers ${column.outlierCount}`
+    `Min ${formatValue(column.min)}`,
+    `Max ${formatValue(column.max)}`,
+    `Mean ${formatValue(column.mean)}`,
+    `Median ${formatValue(column.median)}`,
+    `Std ${formatValue(column.standardDeviation)}`
   ].join(', ');
 }
 
@@ -324,6 +386,36 @@ function textSummary(column: ColumnProfile) {
     .join(', ');
   const averageLength = column.averageTextLength == null ? null : `avg length ${formatValue(column.averageTextLength)}`;
   return [topValues, averageLength].filter(Boolean).join('; ') || '-';
+}
+
+function insightCategory(insight: string) {
+  const normalized = insight.toLowerCase();
+  if (normalized.includes('outlier')) {
+    return 'Possible outlier';
+  }
+  if (normalized.includes('missing')) {
+    return 'Missing values';
+  }
+  if (normalized.includes('low diversity')) {
+    return 'Low diversity';
+  }
+  if (normalized.includes('wide value range')) {
+    return 'Wide range';
+  }
+  return 'Insight';
+}
+
+function gradeClass(grade: string) {
+  if (grade === 'A') {
+    return 'quality-a';
+  }
+  if (grade === 'B') {
+    return 'quality-b';
+  }
+  if (grade === 'C') {
+    return 'quality-c';
+  }
+  return 'quality-d';
 }
 
 function formatValue(value: number | null) {

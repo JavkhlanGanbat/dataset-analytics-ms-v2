@@ -1,0 +1,13 @@
+order_id,order_date,customer_segment,region,product_category,quantity,unit_price,discount_percent,delivery_days,returned
+O1001,2026-01-03,Student,Ulaanbaatar,Books,2,45000,0,2,No
+O1002,2026-01-04,Professional,Darkhan,Electronics,1,380000,5,5,No
+O1003,2026-01-06,Student,Erdenet,Stationery,5,3500,0,3,No
+O1004,2026-01-08,Business,Ulaanbaatar,Electronics,3,420000,10,1,No
+O1005,2026-01-10,Professional,Ulaanbaatar,Books,1,52000,,2,No
+O1006,2026-01-11,Student,Darkhan,Stationery,12,2800,0,9,Yes
+O1007,2026-01-12,Business,Erdenet,Furniture,1,690000,15,6,No
+O1008,2026-01-13,Professional,Ulaanbaatar,Electronics,1,9999999,0,4,No
+O1009,2026-01-15,Student,Ulaanbaatar,Books,0,48000,0,2,No
+O1010,2026-01-16,Business,Darkhan,Furniture,2,720000,20,14,Yes
+O1011,2026-01-17,Professional,Erdenet,Books,3,47000,5,,No
+O1012,2026-01-18,Student,Ulaanbaatar,Stationery,7,3100,0,3,No
