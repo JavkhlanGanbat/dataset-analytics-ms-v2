@@ -1,0 +1,11 @@
+month,region,department,revenue,cost,orders,discount
+January,North,Electronics,1200,700,34,5
+February,North,Electronics,1500,820,41,7
+March,South,Furniture,900,500,22,
+April,South,Furniture,1800,990,48,8
+May,North,Electronics,,760,35,
+June,South,Furniture,2100,1200,,9
+July,North,Electronics,125000,680,37,5
+August,,Furniture,1600,850,39,
+September,South,Furniture,1700,910,44,6
+October,North,Electronics,2000,10500,50,10

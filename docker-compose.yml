@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dataset-postgres
+    environment:
+      POSTGRES_DB: datasets
+      POSTGRES_USER: dataset_user
+      POSTGRES_PASSWORD: dataset_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataset_user -d datasets"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dataset-service:
+    build: ./dataset-service
+    container_name: dataset-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datasets
+      SPRING_DATASOURCE_USERNAME: dataset_user
+      SPRING_DATASOURCE_PASSWORD: dataset_pass
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    environment:
+      DATASET_SERVICE_URL: http://dataset-service:8081
+    ports:
+      - "8082:8082"
+    depends_on:
+      - dataset-service
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dataset-service
+      - analytics-service
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_GATEWAY_URL: http://localhost:8080
+    container_name: dataset-analytics-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  postgres-data:

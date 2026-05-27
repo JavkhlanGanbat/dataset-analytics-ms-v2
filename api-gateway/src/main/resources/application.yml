@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - http://localhost:5173
+                  - http://localhost:3000
+                allowedMethods:
+                  - GET
+                  - POST
+                  - OPTIONS
+                allowedHeaders:
+                  - '*'
+          routes:
+            - id: dataset-service
+              uri: http://dataset-service:8081
+              predicates:
+                - Path=/datasets/**
+            - id: analytics-service
+              uri: http://analytics-service:8082
+              predicates:
+                - Path=/analytics/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
