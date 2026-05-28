@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+.settings
+target
+**/target
+frontend/node_modules
+frontend/dist
+frontend/*.tsbuildinfo
+*.log
+.DS_Store

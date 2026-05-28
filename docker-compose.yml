@@ -17,7 +17,9 @@ services:
       retries: 10
 
   dataset-service:
-    build: ./dataset-service
+    build:
+      context: .
+      dockerfile: dataset-service/Dockerfile
     container_name: dataset-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/datasets
@@ -28,7 +30,9 @@ services:
         condition: service_healthy
 
   analytics-service:
-    build: ./analytics-service
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
     container_name: analytics-service
     environment:
       DATASET_SERVICE_URL: http://dataset-service:8081
@@ -36,7 +40,9 @@ services:
       - dataset-service
 
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8080:8080"
