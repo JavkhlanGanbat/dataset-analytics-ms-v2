@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.example</groupId>
+        <groupId>com.datasetanalytics</groupId>
         <artifactId>dataset-analytics-ms</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
