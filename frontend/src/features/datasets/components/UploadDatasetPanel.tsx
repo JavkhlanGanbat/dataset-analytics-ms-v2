@@ -33,24 +33,24 @@ export function UploadDatasetPanel({ isUploading, notice, onUpload }: UploadData
   return (
     <section className="panel">
       <div className="section-heading">
-        <h2>Upload CSV</h2>
+        <h2>CSV оруулах</h2>
       </div>
       <form className="upload-form" onSubmit={handleSubmit}>
         <label>
-          Dataset name
+          Өгөгдлийн нэр
           <input
             value={datasetName}
             onChange={(event) => setDatasetName(event.target.value)}
-            placeholder="Sales Dataset"
+            placeholder="Борлуулалтын өгөгдөл"
           />
         </label>
         <label>
-          CSV file
+          CSV файл
           <input ref={fileInputRef} type="file" accept=".csv,text/csv" />
         </label>
         <button className="primary-button" type="submit" disabled={isUploading}>
           <UploadCloud size={18} aria-hidden="true" />
-          {isUploading ? 'Uploading' : 'Upload'}
+          {isUploading ? 'Оруулж байна' : 'Оруулах'}
         </button>
       </form>
       {notice && <StatusMessage type={notice.type} message={notice.message} />}

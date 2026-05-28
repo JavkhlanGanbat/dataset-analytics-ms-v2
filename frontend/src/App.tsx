@@ -30,9 +30,9 @@ function App() {
     <main className="app-shell">
       <header className="app-header">
         <div>
-          <h1>DataProfiler</h1>
+          <h1>Өгөгдөл шинжлэгч</h1>
           <p className="subtitle">
-            Upload a CSV file and instantly detect missing values, outliers, and quality issues.
+            CSV файл оруулаад хоосон утга, хэт ялгаатай утга, чанарын асуудлыг шууд илрүүлээрэй.
           </p>
         </div>
       </header>

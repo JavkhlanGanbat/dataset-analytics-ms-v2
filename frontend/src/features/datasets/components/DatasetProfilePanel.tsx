@@ -26,7 +26,7 @@ export function DatasetProfilePanel({
   return (
     <section className="panel analytics-panel">
       <div className="section-heading with-action">
-        <h2>Dataset Profile</h2>
+        <h2>Өгөгдлийн профайл</h2>
         <button
           className="primary-button compact"
           type="button"
@@ -34,16 +34,16 @@ export function DatasetProfilePanel({
           disabled={isLoading || selectedDatasetId == null}
         >
           <BarChart3 size={18} aria-hidden="true" />
-          {isLoading ? 'Analyzing' : 'Generate Profile'}
+          {isLoading ? 'Шинжилж байна' : 'Профайл үүсгэх'}
         </button>
       </div>
       <label className="select-label">
-        Dataset
+        Өгөгдөл
         <select
           value={selectedDatasetId ?? ''}
           onChange={(event) => onSelectDataset(event.target.value === '' ? null : Number(event.target.value))}
         >
-          <option value="" disabled>Select dataset</option>
+          <option value="" disabled>Өгөгдөл сонгох</option>
           {datasets.map((dataset) => (
             <option key={dataset.id} value={dataset.id}>
               {dataset.id} - {dataset.name}
@@ -52,7 +52,7 @@ export function DatasetProfilePanel({
         </select>
       </label>
       {error && <StatusMessage type="error" message={error} />}
-      {profile ? <ProfileView profile={profile} /> : <div className="empty-profile">Choose a dataset and generate a profile.</div>}
+      {profile ? <ProfileView profile={profile} /> : <div className="empty-profile">Өгөгдөл сонгоод профайл үүсгэнэ үү.</div>}
     </section>
   );
 }

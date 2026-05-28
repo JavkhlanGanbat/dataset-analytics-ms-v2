@@ -2,8 +2,11 @@ import type { ColumnProfile, DatasetProfile } from '../model/datasetTypes';
 import {
   formatPercent,
   getColumnSummary,
+  getColumnTypeLabel,
   getColumnWarnings,
+  getDisplayInsight,
   getInsightCategory,
+  getQualityExplanation,
   getQualityGradeClass
 } from '../model/profilePresentation';
 
@@ -16,7 +19,7 @@ export function ProfileView({ profile }: ProfileViewProps) {
     <div className="profile-stack">
       <div className="profile-summary">
         <div>
-          <span>Dataset</span>
+          <span>Өгөгдөл</span>
           <strong>{profile.datasetName}</strong>
         </div>
         <div>
@@ -24,56 +27,56 @@ export function ProfileView({ profile }: ProfileViewProps) {
           <strong>{profile.datasetId}</strong>
         </div>
         <div>
-          <span>Rows</span>
+          <span>Мөр</span>
           <strong>{profile.totalRowCount}</strong>
         </div>
         <div>
-          <span>Columns</span>
+          <span>Багана</span>
           <strong>{profile.totalColumnCount}</strong>
         </div>
       </div>
 
       <div className={`quality-band ${getQualityGradeClass(profile.dataQuality.grade)}`}>
         <div className="quality-score">
-          <span>Data Quality Score</span>
+          <span>Өгөгдлийн чанарын оноо</span>
           <strong>{profile.dataQuality.score}<small>/100</small></strong>
-          <em>Grade {profile.dataQuality.grade}</em>
+          <em>Үнэлгээ {profile.dataQuality.grade}</em>
         </div>
-        <p>{profile.dataQuality.explanation}</p>
+        <p>{getQualityExplanation(profile.dataQuality.explanation)}</p>
       </div>
 
       <div>
-        <h3>Key Findings</h3>
+        <h3>Гол дүгнэлтүүд</h3>
         <div className="insight-grid">
           {profile.insights.map((insight) => (
             <article className="insight-card" key={insight}>
               <span>{getInsightCategory(insight)}</span>
-              <p>{insight}</p>
+              <p>{getDisplayInsight(insight)}</p>
             </article>
           ))}
         </div>
       </div>
 
       <div>
-        <h3>Column Details</h3>
+        <h3>Баганын дэлгэрэнгүй</h3>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Column</th>
-                <th>Type</th>
-                <th>Values</th>
-                <th>Missing</th>
-                <th>Distinct</th>
-                <th>Warnings</th>
-                <th>Summary</th>
+                <th>Багана</th>
+                <th>Төрөл</th>
+                <th>Утгууд</th>
+                <th>Хоосон</th>
+                <th>Ялгаатай</th>
+                <th>Анхааруулга</th>
+                <th>Хураангуй</th>
               </tr>
             </thead>
             <tbody>
               {profile.columns.map((column) => (
                 <tr key={column.columnName}>
                   <td>{column.columnName}</td>
-                  <td><span className={`type-chip ${column.inferredType.toLowerCase()}`}>{column.inferredType}</span></td>
+                  <td><span className={`type-chip ${column.inferredType.toLowerCase()}`}>{getColumnTypeLabel(column.inferredType)}</span></td>
                   <td>{column.totalValues}</td>
                   <td>{column.missingValues} ({formatPercent(column.missingPercentage)})</td>
                   <td>{column.distinctCount}</td>
@@ -92,7 +95,7 @@ export function ProfileView({ profile }: ProfileViewProps) {
 function WarningLabels({ column }: { column: ColumnProfile }) {
   const warnings = getColumnWarnings(column);
   if (warnings.length === 0) {
-    return <span className="muted-text">None</span>;
+    return <span className="muted-text">Байхгүй</span>;
   }
 
   return (

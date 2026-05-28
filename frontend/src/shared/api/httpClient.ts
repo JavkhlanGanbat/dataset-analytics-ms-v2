@@ -4,7 +4,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   const response = await fetch(`${API_GATEWAY_URL}${path}`, init);
   if (!response.ok) {
     const message = await readErrorMessage(response);
-    throw new Error(message || `Request failed with status ${response.status}`);
+    throw new Error(message || `Хүсэлт амжилтгүй боллоо. Төлөв: ${response.status}`);
   }
 
   return response.json() as Promise<T>;

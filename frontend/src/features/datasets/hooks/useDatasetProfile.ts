@@ -10,7 +10,7 @@ export function useDatasetProfile() {
 
   const loadProfile = useCallback(async (datasetId: number | null) => {
     if (datasetId == null) {
-      setProfileError('Select a dataset first.');
+      setProfileError('Эхлээд өгөгдөл сонгоно уу.');
       return;
     }
 
@@ -20,7 +20,7 @@ export function useDatasetProfile() {
       const result = await fetchDatasetProfile(datasetId);
       setProfile(result);
     } catch (error) {
-      setProfileError(error instanceof Error ? error.message : 'Failed to load profile.');
+      setProfileError(error instanceof Error ? error.message : 'Профайлыг ачаалж чадсангүй.');
     } finally {
       setIsLoadingProfile(false);
     }

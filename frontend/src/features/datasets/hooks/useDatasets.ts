@@ -32,7 +32,7 @@ export function useDatasets() {
         return result[0]?.id ?? null;
       });
     } catch (error) {
-      setListError(readErrorMessage(error, 'Failed to load datasets.'));
+      setListError(readErrorMessage(error, 'Өгөгдлийн жагсаалтыг ачаалж чадсангүй.'));
     } finally {
       setIsLoadingDatasets(false);
     }
@@ -45,7 +45,7 @@ export function useDatasets() {
   const uploadDatasetFile = useCallback(async (name: string, file: File | null) => {
     const trimmedName = name.trim();
     if (!trimmedName || !file) {
-      setUploadNotice({ type: 'error', message: 'Dataset name and CSV file are required.' });
+      setUploadNotice({ type: 'error', message: 'Өгөгдлийн нэр болон CSV файл шаардлагатай.' });
       return null;
     }
 
@@ -55,12 +55,12 @@ export function useDatasets() {
       const uploaded = await uploadDataset(trimmedName, file);
       setUploadNotice({
         type: 'success',
-        message: `Dataset uploaded successfully. "${uploaded.name}" is ready for analysis.`
+        message: `Өгөгдөл амжилттай оруулагдлаа. "${uploaded.name}" шинжилгээнд бэлэн боллоо.`
       });
       await loadDatasets(uploaded.id);
       return uploaded;
     } catch (error) {
-      setUploadNotice({ type: 'error', message: readErrorMessage(error, 'Upload failed.') });
+      setUploadNotice({ type: 'error', message: readErrorMessage(error, 'Оруулж чадсангүй.') });
       return null;
     } finally {
       setIsUploading(false);

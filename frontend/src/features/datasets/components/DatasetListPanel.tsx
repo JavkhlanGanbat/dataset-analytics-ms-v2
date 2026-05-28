@@ -24,10 +24,10 @@ export function DatasetListPanel({
   return (
     <section className="panel dataset-panel">
       <div className="section-heading with-action">
-        <h2>Datasets</h2>
+        <h2>Өгөгдлүүд</h2>
         <button className="icon-button" type="button" onClick={() => void onRefresh()} disabled={isLoading}>
           <RefreshCw size={17} aria-hidden="true" />
-          Refresh
+          Шинэчлэх
         </button>
       </div>
       {error && <StatusMessage type="error" message={error} />}
@@ -36,10 +36,10 @@ export function DatasetListPanel({
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
-              <th>Rows</th>
-              <th>Columns</th>
-              <th>Created</th>
+              <th>Нэр</th>
+              <th>Мөр</th>
+              <th>Багана</th>
+              <th>Үүсгэсэн</th>
               <th></th>
             </tr>
           </thead>
@@ -58,14 +58,14 @@ export function DatasetListPanel({
                     onClick={() => onSelectDataset(dataset.id)}
                     disabled={selectedDatasetId === dataset.id}
                   >
-                    {selectedDatasetId === dataset.id ? 'Selected' : 'Select'}
+                    {selectedDatasetId === dataset.id ? 'Сонгосон' : 'Сонгох'}
                   </button>
                 </td>
               </tr>
             ))}
             {!isLoading && datasets.length === 0 && (
               <tr>
-                <td colSpan={6} className="empty-cell">No datasets yet.</td>
+                <td colSpan={6} className="empty-cell">Одоогоор өгөгдөл алга.</td>
               </tr>
             )}
           </tbody>
